@@ -16,11 +16,6 @@ def run_clone(repo):
 	channel = 'main'
 	platform = 'any'
 
-	pre_pull_version = None
-	try:
-		pre_pull_version = get_version_number(repo_path)
-	except Exception:
-		pass
 	clone(repo['url'], repo_path)
 
 	version = get_version_number(repo_path)
@@ -35,7 +30,7 @@ def run_clone(repo):
 
 	update_latest_json(f'pkg/{repo_name}/{channel}/{platform}/latest.json', os.path.basename(archive), version)
 
-	return pre_pull_version != version and is_new_archive
+	return is_new_archive
 
 def clone(git_url, clone_path):
 	if os.path.exists(clone_path):

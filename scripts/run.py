@@ -7,8 +7,8 @@ from s3_upload import run_upload
 
 def run(is_dry):
 	for repo in repos:
-		#if run_clone(repo) or run_generate(repo):
-		run_upload(repo['name'], is_dry)
+		if run_clone(repo) or run_generate(repo):
+			run_upload(repo['name'], is_dry)
 
 if __name__ == "__main__":
 	is_dry = False

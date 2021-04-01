@@ -88,9 +88,11 @@ def upload_files(client, repo_name, files, is_dry):
                 client.upload_file(file_name, SPACES_BUCKET, file_name, ExtraArgs=ExtraArgs)
             upload_number += 1
 
-def get_existing_objects(client, repo_name, ):
+def get_existing_objects(client, repo_name):
     response = client.list_objects(Bucket=os.getenv('SPACES_BUCKET'), Prefix=f'pkg/{repo_name}')
     # response = client.list_objects_v2(Bucket=os.getenv('SPACES_BUCKET'), Prefix='maps/')
+    if 'Contents' not in response:
+        return []
     return [obj['Key'] for obj in response['Contents']]
 
 def run_upload(repo_name, is_dry):
