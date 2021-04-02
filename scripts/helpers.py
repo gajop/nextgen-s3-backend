@@ -1,4 +1,5 @@
 import subprocess
+from subprocess import PIPE
 import os
 import sys
 from pathlib import Path
@@ -11,7 +12,8 @@ def shell(cmds, **kwargs):
 	if 'cwd' in kwargs:
 		cmd = kwargs['cwd'] + '$ ' + cmd
 	print(cmd)
-	result = subprocess.run(cmds, capture_output=True, text=True, **kwargs)
+	# result = subprocess.run(cmds, capture_output=True, text=True, **kwargs)
+	result = subprocess.run(cmds, stdout=PIPE, stderr=PIPE, universal_newlines=True, **kwargs)
 	if result.returncode != 0:
 		raise Exception(f'Command failed: {result.stderr} {result.stdout}')
 	if result.stderr.strip() != '':
