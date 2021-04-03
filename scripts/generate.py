@@ -8,6 +8,7 @@ import json
 
 from helpers import shell, maybe_make_archive, get_version_number, get_commit_history, checkout
 from repos import repos
+from config import *
 
 REPO_DIR = 'repos/'
 
@@ -16,7 +17,7 @@ def run_generate(repo):
 	repo_path = os.path.join(REPO_DIR, repo_name)
 
 	history = get_commit_history(repo_path)
-	history = history[-50:]
+	history = history[-HISTORY_GENERATION_SIZE:]
 	newest_version = get_version_number(repo_path)
 	# Assuming linear history
 	versions = [newest_version - i for i, sha in enumerate(history)]
@@ -37,6 +38,9 @@ def run_generate(repo):
 		was_generated = generate(repo_name, repo_path, baseUrl, old_ver, new_ver, old_sha, new_sha)
 		if was_generated:
 			generated_one = True
+
+	# for file in os.listdir('output'):
+	# 	os.remove(file)
 	return generated_one
 
 def generate(repo_name, repo_path, baseUrl, old_ver, new_ver, old_sha, new_sha):

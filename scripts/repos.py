@@ -29,12 +29,14 @@ repos = [
 			'main': ['any']
 		}
 	},
+	{
+		'url': 'https://github.com/beyond-all-reason/Beyond-All-Reason.git',
+		'name': 'beyond-all-reason/Beyond-All-Reason',
+		'rapid': 'byar',
+		'type': 'game',
+		'path': 'games',
+		'channels': {
+			'main': ['any']
+		}
+	},
 ]
-# 	{
-# 		'url': 'https://github.com/beyond-all-reason/Beyond-All-Reason.git',
-# 		'name': 'beyond-all-reason/Beyond-All-Reason',
-# 		'rapid': 'byar',
-# 		'path': 'games',
-# 		'type': 'game'
-# 	},
-# ]
