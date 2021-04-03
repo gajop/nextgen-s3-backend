@@ -25,8 +25,8 @@ def run_clone(repo):
 	if os.path.exists(diff_path):
 		return False
 
-	make_diff("/dev/null", archive, diff_path, 0, version, repo_name)
 	archive, _ = maybe_make_archive(repo_path, 'output')
+	make_diff("/dev/null", archive, diff_path, 0, version, repo_name)
 
 	package_info = repo
 	update_package_info(package_info, f'pkg/{repo_name}/package-info.json')
