@@ -1,10 +1,12 @@
 import sys
+import time
 
 from update_repos import run_clone
 from repos import repos
 from generate import run_generate
 from s3_upload import run_upload
-import time
+from config import *
+from helpers import replace_with_empty
 
 SLEEP_SECONDS = 60
 
@@ -15,8 +17,27 @@ def run(is_dry):
 			has_generate_updates = run_generate(repo)
 			if has_clone_updates or has_generate_updates:
 				run_upload(repo['name'], is_dry)
+			if REMOVE_ON_UPLOAD:
+				remove_pkg_on_upload(repo['name'])
 		print(f"Sleeping for {SLEEP_SECONDS} seconds...")
 		time.sleep(SLEEP_SECONDS)
+
+def remove_pkg_on_upload(repo_name):
+	all_files = []
+	pkg_folder = f'pkg/{repo_name}'
+	for root, dir, files in os.walk(pkg_folder):
+		for file in files:
+			absPath = os.path.join(root, file)
+			if root.endswith('patch'):
+				if file.endswith('.json'):
+					all_files.append(absPath)
+				else:
+					all_files.append(absPath)
+			else:
+				all_files.append(absPath)
+
+	for file in all_files:
+		replace_with_empty(file)
 
 if __name__ == "__main__":
 	is_dry = False

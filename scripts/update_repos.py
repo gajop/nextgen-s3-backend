@@ -21,20 +21,22 @@ def run_clone(repo):
 	version = get_version_number(repo_path)
 
 	baseUrl = f"{repo_name}/{channel}/{platform}"
-	archive, is_new_archive = maybe_make_archive(repo_path, 'output')
 	diff_path = f"pkg/{baseUrl}/patch/0-{version}"
-	if not os.path.exists(diff_path):
-		make_diff("/dev/null", archive, diff_path, 0, version, repo_name)
+	if os.path.exists(diff_path):
+		return False
+
+	make_diff("/dev/null", archive, diff_path, 0, version, repo_name)
+	archive, _ = maybe_make_archive(repo_path, 'output')
 
 	package_info = repo
 	update_package_info(package_info, f'pkg/{repo_name}/package-info.json')
 
 	update_latest_json(f'pkg/{repo_name}/{channel}/{platform}/latest.json', os.path.basename(archive), version)
 
-	# if os.path.exists(archive):
-	# 	os.remove(archive)
+	if os.path.exists(archive):
+		os.remove(archive)
 
-	return is_new_archive
+	return True
 
 def clone(git_url, clone_path):
 	if os.path.exists(clone_path):

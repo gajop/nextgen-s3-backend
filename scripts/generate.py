@@ -39,8 +39,9 @@ def run_generate(repo):
 		if was_generated:
 			generated_one = True
 
-	# for file in os.listdir('output'):
-	# 	os.remove(file)
+	for file in os.listdir('output'):
+		os.remove(os.path.join('output', file))
+
 	return generated_one
 
 def generate(repo_name, repo_path, baseUrl, old_ver, new_ver, old_sha, new_sha):
