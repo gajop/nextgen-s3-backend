@@ -72,3 +72,14 @@ def checkout(repo_path, commit_sha):
 
 def get_name(repo_path):
 	return shell(['lua', f'{Path(__file__).parent}/load.lua', f'{repo_path}/modinfo.lua', 'name'])
+
+def replace_with_empty(file):
+	os.remove(file)
+	touch(file)
+
+def touch(path):
+	basedir = os.path.dirname(path)
+	if not os.path.exists(basedir):
+		os.makedirs(basedir)
+	with open(path, 'a'):
+		os.utime(path, None)
