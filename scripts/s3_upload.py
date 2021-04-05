@@ -1,5 +1,7 @@
 import os
 import sys
+from pathlib import Path
+
 import boto3
 
 from helpers import replace_with_empty
