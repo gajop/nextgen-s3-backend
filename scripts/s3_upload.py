@@ -28,11 +28,11 @@ def get_upload_list(name, existing_objects):
 	package_jsons = []
 	for root, dir, files in os.walk(pkg_folder):
 		for file in files:
+			absPath = os.path.join(root, file)
 			# TODO: make a better algorithm to figure out what to upload and when
-			if Path(file).stat().st_size == 0:
+			if Path(absPath).stat().st_size == 0:
 				continue
 
-			absPath = os.path.join(root, file)
 			if root.endswith('patch'):
 				if file.endswith('.json'):
 					patch_jsons.append(absPath)
