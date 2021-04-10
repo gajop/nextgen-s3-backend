@@ -61,7 +61,7 @@ def get_spring_version(repo_path):
 			return version
 
 	version_number = get_spring_version_number(repo_path)
-	sha = shell(['git', 'rev-parse', '--short', 'HEAD'], cwd=repo_path)
+	sha = shell(['git', 'rev-parse', '--short', 'HEAD'], cwd=repo_path)[:7]
 	return f'test-{version_number}-{sha}'
 
 def get_spring_version_number(repo_path):
