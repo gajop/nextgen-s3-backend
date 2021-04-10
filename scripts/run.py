@@ -5,6 +5,7 @@ from update_repos import run_clone
 from repos import repos
 from generate import run_generate
 from s3_upload import run_upload
+from versions import run_versions
 from config import *
 from helpers import replace_with_empty
 
@@ -13,12 +14,16 @@ SLEEP_SECONDS = 60
 def run(is_dry):
 	while True:
 		for repo in repos:
+			repo_name = repo['name']
+			first_run = not os.path.exists(f'pkg/{repo_name}')
 			has_clone_updates = run_clone(repo)
-			has_generate_updates = run_generate(repo)
-			if has_clone_updates or has_generate_updates:
-				run_upload(repo['name'], is_dry)
-			if REMOVE_ON_UPLOAD:
-				remove_pkg_on_upload(repo['name'])
+			if first_run:
+				run_generate(repo)
+				run_versions(repo)
+			if has_clone_updates:
+				run_upload(repo_name, is_dry)
+			if REMOVE_ON_UPLOAD and not is_dry:
+				remove_pkg_on_upload(repo_name)
 		print(f"Sleeping for {SLEEP_SECONDS} seconds...")
 		time.sleep(SLEEP_SECONDS)
 

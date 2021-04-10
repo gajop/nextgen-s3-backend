@@ -4,9 +4,10 @@ import os
 from pathlib import Path
 import json
 
-from helpers import shell, maybe_make_archive, get_version_number
+from helpers import shell, maybe_make_archive, get_version_number, get_spring_name, get_spring_version, get_commit_history
 from repos import repos
-from generate import make_diff
+from generate import make_diff, generate
+from versions import make_connection, create_tables, insert_versions
 
 REPO_DIR = 'repos/'
 
@@ -18,20 +19,36 @@ def run_clone(repo):
 
 	clone(repo['url'], repo_path)
 
-	version = get_version_number(repo_path)
+	version_number = get_version_number(repo_path)
 
 	baseUrl = f"{repo_name}/{channel}/{platform}"
-	diff_path = f"pkg/{baseUrl}/patch/0-{version}"
+	diff_path = f"pkg/{baseUrl}/patch/0-{version_number}"
 	if os.path.exists(diff_path):
 		return False
 
 	archive, _ = maybe_make_archive(repo_path, 'output')
-	make_diff("/dev/null", archive, diff_path, 0, version, repo_name)
+	make_diff("/dev/null", archive, diff_path, 0, version_number, repo_name)
 
 	package_info = repo
 	update_package_info(package_info, f'pkg/{repo_name}/package-info.json')
 
-	update_latest_json(f'pkg/{repo_name}/{channel}/{platform}/latest.json', os.path.basename(archive), version)
+	update_latest_json(f'pkg/{repo_name}/{channel}/{platform}/latest.json', os.path.basename(archive), version_number)
+
+	# TODO: don't rely on git for old versions, use our system
+	history = get_commit_history(repo_path)
+	if len(history) <= 1:
+		new_sha = history[-1]
+		old_sha = history[-2]
+		generate(repo_name, repo_path, baseUrl, version_number - 1, version_number, old_sha, new_sha)
+
+	con = make_connection()
+	create_tables(con)
+	spring_name = get_spring_name(repo_path).strip()
+	spring_version = get_spring_version(repo_path)
+	insert_versions(con, [(
+		f"{spring_name} {spring_version}",
+		f"{repo_name}@{channel}:{version_number}"
+	)])
 
 	if os.path.exists(archive):
 		os.remove(archive)

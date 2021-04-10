@@ -6,3 +6,5 @@ archives
 
 .env
 *.pyc
+
+*.db

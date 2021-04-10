@@ -67,7 +67,10 @@ def upload_files(client, repo_name, files, is_dry):
 				print(f"Invalid file: {file_name}. Won't upload")
 				return
 
-	print("Starting upload")
+	if is_dry:
+		print("No upload (dry run)")
+	else:
+		print("Starting upload")
 	upload_number = 1
 	for cat in file_categories:
 		ExtraArgs = { 'ACL': 'public-read' }

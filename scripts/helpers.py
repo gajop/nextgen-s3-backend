@@ -28,8 +28,8 @@ def shell(cmds, **kwargs):
 	return result.stdout.strip()
 
 def maybe_make_archive(clone_path, dest_dir):
-	version = get_version(clone_path)
-	name = get_name(clone_path).strip()
+	version = get_spring_version(clone_path)
+	name = get_spring_name(clone_path).strip()
 	dest = f'{dest_dir}/{name} {version}.sdz'
 	if os.path.exists(dest):
 		return dest, False
@@ -51,7 +51,7 @@ def make_archive(repo_path, version, dest):
 		Path(dest).parent.mkdir(parents=True, exist_ok=True)
 		shutil.move(dest + '.zip', dest)
 
-def get_version(repo_path):
+def get_spring_version(repo_path):
 	commit_msg = shell(['git', 'log', '-1', '--pretty=%B'], cwd=repo_path)
 
 	if commit_msg.startswith('VERSION{'):
@@ -60,16 +60,20 @@ def get_version(repo_path):
 			version = version.split('}')[0]
 			return version
 
-	version_number = get_version_number(repo_path)
+	version_number = get_spring_version_number(repo_path)
 	sha = shell(['git', 'rev-parse', '--short', 'HEAD'], cwd=repo_path)
 	return f'test-{version_number}-{sha}'
 
-def get_version_number(repo_path):
+def get_spring_version_number(repo_path):
 	return int(shell(['git', 'rev-list', 'HEAD', '--count'], cwd=repo_path))
+
+def get_version_number(repo_path):
+	return int(shell(['git', 'rev-list', '--first-parent', 'HEAD', '--count'], cwd=repo_path))
 
 def get_commit_history(repo_path):
 	shell(['git', 'checkout', 'master'], cwd=repo_path)
-	return shell(['git', 'log', '--reverse', '--pretty=%H'], cwd=repo_path).split()
+
+	return shell(['git', 'rev-list', '--first-parent', 'HEAD', '--reverse'], cwd=repo_path).split()
 
 def checkout(repo_path, commit_sha):
 	shell(['git', 'checkout', '-f', commit_sha], cwd=repo_path)
@@ -77,7 +81,7 @@ def checkout(repo_path, commit_sha):
 	shell(['git', 'submodule', 'init'], cwd=repo_path)
 	shell(['git', 'submodule', 'update'], cwd=repo_path)
 
-def get_name(repo_path):
+def get_spring_name(repo_path):
 	return shell(['lua', f'{Path(__file__).parent}/load.lua', f'{repo_path}/modinfo.lua', 'name'])
 
 def replace_with_empty(file):

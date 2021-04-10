@@ -9,6 +9,7 @@ authors = ["Gajo Petrovic <gajopetrovic@gmail.com>"]
 python = "^3.6"
 boto3 = "^1.17.39"
 python-dotenv = "^0.16.0"
+tqdm = "^4.60.0"
 
 [tool.poetry.dev-dependencies]
 
