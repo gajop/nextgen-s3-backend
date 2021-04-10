@@ -43,11 +43,12 @@ def run_versions(repo):
 
 		checkout(repo_path, new_sha)
 		name = get_spring_name(repo_path).strip()
-		version = get_spring_version(repo_path)
+		spring_version = get_spring_version(repo_path)
 		version_number = get_version_number(repo_path)
-		if i != len(history) - 1:
+		print(newest_version, version_number)
+		if version_number != newest_version:
 			version_entries.append((
-				f"{name} {version}",
+				f"{name} {spring_version}",
 				f"{repo_name}@{channel}:{version_number}"
 			))
 	print(version_entries)

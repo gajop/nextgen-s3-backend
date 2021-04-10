@@ -20,9 +20,11 @@ def run_clone(repo):
 	clone(repo['url'], repo_path)
 
 	version_number = get_version_number(repo_path)
+	spring_name = get_spring_name(repo_path).strip()
+	spring_version = get_spring_version(repo_path)
 
-	baseUrl = f"{repo_name}/{channel}/{platform}"
-	diff_path = f"pkg/{baseUrl}/patch/0-{version_number}"
+	baseUrl = f"pkg/{repo_name}/{channel}/{platform}"
+	diff_path = f"{baseUrl}/patch/0-{version_number}"
 	if os.path.exists(diff_path):
 		return False
 
@@ -43,8 +45,6 @@ def run_clone(repo):
 
 	con = make_connection()
 	create_tables(con)
-	spring_name = get_spring_name(repo_path).strip()
-	spring_version = get_spring_version(repo_path)
 	insert_versions(con, [(
 		f"{spring_name} {spring_version}",
 		f"{repo_name}@{channel}:{version_number}"
