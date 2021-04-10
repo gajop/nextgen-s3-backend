@@ -36,7 +36,7 @@ def run_clone(repo):
 
 	# TODO: don't rely on git for old versions, use our system
 	history = get_commit_history(repo_path)
-	if len(history) <= 1:
+	if len(history) > 1:
 		new_sha = history[-1]
 		old_sha = history[-2]
 		generate(repo_name, repo_path, baseUrl, version_number - 1, version_number, old_sha, new_sha)
