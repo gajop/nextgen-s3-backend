@@ -7,16 +7,23 @@ import shutil
 import tempfile
 import fileinput
 
+shell_printing_silenced = False
+
+def set_shells_silent(silent):
+	global shell_printing_silenced
+	shell_printing_silenced = silent
+
 def shell(cmds, **kwargs):
 	cmd = ' '.join(cmds)
 	if 'cwd' in kwargs:
 		cmd = kwargs['cwd'] + '$ ' + cmd
-	print(cmd)
+	if not shell_printing_silenced:
+		print(cmd)
 	# result = subprocess.run(cmds, capture_output=True, text=True, **kwargs)
 	result = subprocess.run(cmds, stdout=PIPE, stderr=PIPE, universal_newlines=True, **kwargs)
 	if result.returncode != 0:
 		raise Exception(f'Command failed: {result.stderr} {result.stdout}')
-	if result.stderr.strip() != '':
+	if result.stderr.strip() != '' and not shell_printing_silenced:
 		print(f'Error output: {result.stderr}')
 	return result.stdout.strip()
 
