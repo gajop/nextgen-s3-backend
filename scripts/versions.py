@@ -38,8 +38,6 @@ def run_versions(repo):
 	))
 	for i, new_sha in enumerate(history):
 		new_ver = versions[i]
-		if i == 0:
-			continue
 
 		checkout(repo_path, new_sha)
 		name = get_spring_name(repo_path).strip()
