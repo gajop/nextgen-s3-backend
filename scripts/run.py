@@ -19,8 +19,7 @@ def run(is_dry):
 				has_clone_updates = run_clone(repo)
 				if has_clone_updates:
 					run_upload(repo_name, is_dry)
-				# if REMOVE_ON_UPLOAD and not is_dry:
-				if True:
+				if REMOVE_ON_UPLOAD and not is_dry:
 					remove_pkg_on_upload(repo_name)
 			except Exception:
 				traceback.print_exc()
