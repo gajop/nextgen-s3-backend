@@ -23,7 +23,7 @@ def run_versions(repo):
 
 	history = get_commit_history(repo_path)
 	history = history[-HISTORY_GENERATION_SIZE:]
-	newest_version = get_version_number(repo_path)
+	newest_version = get_version_number(repo_name)
 	# Assuming linear history
 	versions = [newest_version - i for i, sha in enumerate(history)]
 	versions.reverse()
@@ -42,7 +42,7 @@ def run_versions(repo):
 		checkout(repo_path, new_sha)
 		name = get_spring_name(repo_path).strip()
 		spring_version = get_spring_version(repo_path)
-		version_number = get_version_number(repo_path)
+		version_number = get_version_number(repo_name)
 		print(newest_version, version_number)
 		if version_number != newest_version:
 			version_entries.append((

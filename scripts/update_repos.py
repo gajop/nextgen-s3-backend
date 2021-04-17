@@ -4,7 +4,8 @@ import os
 from pathlib import Path
 import json
 
-from helpers import shell, maybe_make_archive, get_version_number, get_spring_name, get_spring_version, get_commit_history
+from helpers import shell, maybe_make_archive_from_git, get_version_number, get_spring_name, get_spring_version
+from helpers import get_git_hash
 from repos import repos
 from generate import make_diff, generate
 from versions import make_connection, create_tables, insert_versions
@@ -17,37 +18,48 @@ def run_clone(repo):
 	channel = 'main'
 	platform = 'any'
 
+	old_hash = None
+	if os.path.exists(repo_path):
+		old_hash = get_git_hash(repo_path)
 	clone(repo['url'], repo_path)
+	new_hash = get_git_hash(repo_path)
 
-	version_number = get_version_number(repo_path)
+	old_version_number = get_version_number(repo_name, channel, platform)
+	new_version_number = old_version_number + 1
+
+	if old_hash == new_hash and old_version_number != 0:
+		return False
+
 	spring_name = get_spring_name(repo_path).strip()
 	spring_version = get_spring_version(repo_path)
 
 	baseUrl = f"pkg/{repo_name}/{channel}/{platform}"
-	diff_path = f"{baseUrl}/patch/0-{version_number}"
+	diff_path = f"{baseUrl}/patch/0-{new_version_number}"
 	if os.path.exists(diff_path):
 		return False
 
-	archive, _ = maybe_make_archive(repo_path, 'output')
-	make_diff("/dev/null", archive, diff_path, 0, version_number, repo_name)
+	archive, _ = maybe_make_archive_from_git(repo_path, 'output')
+	archive_name = os.path.basename(archive)
+	make_diff("/dev/null", archive, diff_path, 0, new_version_number, archive_name)
 
 	package_info = repo
-	update_package_info(package_info, f'pkg/{repo_name}/package-info.json')
+	write_json_to_file(f'pkg/{repo_name}/package-info.json', package_info)
 
-	update_latest_json(f'pkg/{repo_name}/{channel}/{platform}/latest.json', os.path.basename(archive), version_number)
+	write_json_to_file(f'pkg/{repo_name}/{channel}/{platform}/latest.json',
+		{
+			'version': new_version_number,
+			'name': archive_name
+		}
+	)
 
-	# TODO: don't rely on git for old versions, use our system
-	history = get_commit_history(repo_path)
-	if len(history) > 1:
-		new_sha = history[-1]
-		old_sha = history[-2]
-		generate(repo_name, repo_path, baseUrl, version_number - 1, version_number, old_sha, new_sha)
+	if old_version_number != 0:
+		generate(baseUrl, old_version_number, new_version_number)
 
 	con = make_connection()
 	create_tables(con)
 	insert_versions(con, [(
 		f"{spring_name} {spring_version}",
-		f"{repo_name}@{channel}:{version_number}"
+		f"{repo_name}@{channel}:{new_version_number}"
 	)])
 
 	if os.path.exists(archive):
@@ -76,16 +88,9 @@ def update_submodules(clone_path):
 	shell(['git', 'submodule', 'init'], cwd=clone_path)
 	shell(['git', 'submodule', 'update'], cwd=clone_path)
 
-def update_package_info(package_info, dest):
-	with open(dest, 'w') as outfile:
-		json.dump(package_info, outfile, sort_keys=True, indent=2)
-
-def update_latest_json(dest, name, version):
-	with open(dest, 'w') as outfile:
-		json.dump({
-			'version': version,
-			'name': name
-		}, outfile, sort_keys=True, indent=2)
+def write_json_to_file(file, obj):
+	with open(file, 'w') as outfile:
+		json.dump(obj, outfile, sort_keys=True, indent=2)
 
 if __name__ == '__main__':
 	for repo in repos:

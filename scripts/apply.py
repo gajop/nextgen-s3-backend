@@ -12,7 +12,7 @@ def run_butler_apply():
 		repo_path = os.path.join(REPO_DIR, repo_name)
 
 		history = get_commit_history(repo_path)
-		newest_version = get_version_number(repo_path)
+		newest_version = get_version_number(repo_name)
 		# Assuming linear history
 		versions = [newest_version - i for i, sha in enumerate(history)]
 		versions.reverse()

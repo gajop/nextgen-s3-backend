@@ -6,7 +6,7 @@ import fileinput
 import json
 
 
-from helpers import shell, maybe_make_archive, get_version_number, get_commit_history, checkout
+from helpers import shell, maybe_make_archive_from_pkg, get_version_number, get_commit_history, checkout
 from repos import repos
 from config import *
 
@@ -18,7 +18,7 @@ def run_generate(repo):
 
 	history = get_commit_history(repo_path)
 	history = history[-HISTORY_GENERATION_SIZE:]
-	newest_version = get_version_number(repo_path)
+	newest_version = get_version_number(repo_name)
 	# Assuming linear history
 	versions = [newest_version - i for i, sha in enumerate(history)]
 	versions.reverse()
@@ -44,22 +44,20 @@ def run_generate(repo):
 
 	return generated_one
 
-def generate(repo_name, repo_path, baseUrl, old_ver, new_ver, old_sha, new_sha):
-	up_diff = f'{baseUrl}/patch/{old_ver}-{new_ver}'
-	down_diff = f'{baseUrl}/patch/{new_ver}-{old_ver}'
+def generate(baseUrl, old_version_number, new_version_number):
+	up_diff = f'{baseUrl}/patch/{old_version_number}-{new_version_number}'
+	down_diff = f'{baseUrl}/patch/{new_version_number}-{old_version_number}'
 	if os.path.exists(up_diff) and os.path.exists(down_diff):
 		return False
 
-	checkout(repo_path, new_sha)
-	archive, _ = maybe_make_archive(repo_path, 'output')
-	checkout(repo_path, old_sha)
-	old_archive, _ = maybe_make_archive(repo_path, 'output')
+	archive, _ = maybe_make_archive_from_pkg(baseUrl, new_version_number, 'output')
+	old_archive, _ = maybe_make_archive_from_pkg(baseUrl, old_version_number, 'output')
 
 	new_name = os.path.basename(archive)
 	old_name = os.path.basename(old_archive)
 
-	make_diff(old_archive, archive, up_diff, old_ver, new_ver, new_name)
-	make_diff(archive, old_archive, down_diff, new_ver, old_ver, old_name)
+	make_diff(old_archive, archive, up_diff, old_version_number, new_version_number, new_name)
+	make_diff(archive, old_archive, down_diff, new_version_number, old_version_number, old_name)
 	os.remove(old_archive)
 
 	return True

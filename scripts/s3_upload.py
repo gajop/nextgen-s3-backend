@@ -44,7 +44,7 @@ def get_upload_list(name, existing_objects):
 	bef_patches_len = len(patches)
 	bef_patch_jsons_len = len(patch_jsons)
 
-	patches = [o for o in patches if o not in existing_objects or o.endswith('1303-1302.sig')]
+	patches = [o for o in patches if o not in existing_objects]
 	patch_jsons = [o for o in patch_jsons if o not in existing_objects]
 
 	print(f"Uploading {len(patches)} ({bef_patches_len - len(patches)} omitted) patches, " +

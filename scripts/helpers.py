@@ -6,6 +6,7 @@ from pathlib import Path
 import shutil
 import tempfile
 import fileinput
+import json
 
 shell_printing_silenced = False
 
@@ -27,7 +28,7 @@ def shell(cmds, **kwargs):
 		print(f'Error output: {result.stderr}')
 	return result.stdout.strip()
 
-def maybe_make_archive(clone_path, dest_dir):
+def maybe_make_archive_from_git(clone_path, dest_dir):
 	version = get_spring_version(clone_path)
 	name = get_spring_name(clone_path).strip()
 	dest = f'{dest_dir}/{name} {version}.sdz'
@@ -35,6 +36,18 @@ def maybe_make_archive(clone_path, dest_dir):
 		return dest, False
 	make_archive(clone_path, version, dest)
 	return dest, True
+
+def maybe_make_archive_from_pkg(baseUrl, version, dest_dir):
+	version_json = json.load(open(f'{baseUrl}/patch/{version}.json', 'r'))
+	archive_name = version_json['name']
+
+	archive_path = os.path.join(dest_dir, archive_name)
+	if os.path.exists(archive_path):
+		archive_path, False
+
+	shell(['./butler', 'apply', '--staging-dir=tmp', f'{baseUrl}/patch/0-{version}', dest_dir])
+	shutil.rmtree('./tmp')
+	return archive_path, True
 
 def make_archive(repo_path, version, dest):
 	with tempfile.TemporaryDirectory() as tmpdir:
@@ -67,13 +80,29 @@ def get_spring_version(repo_path):
 def get_spring_version_number(repo_path):
 	return int(shell(['git', 'rev-list', 'HEAD', '--count'], cwd=repo_path))
 
-def get_version_number(repo_path):
+# deprecated
+def get_version_number_from_git(repo_path):
 	return int(shell(['git', 'rev-list', '--first-parent', 'HEAD', '--count'], cwd=repo_path))
+
+def get_version_number(repo_name, channel, platform):
+	latest = f'pkg/{repo_name}/{channel}/{platform}/latest.json'
+	if not os.path.exists(latest):
+		return 0
+
+	try:
+		latest_json = json.load(open(latest, 'r'))
+		return latest_json['version']
+	except Exception:
+		return 0
 
 def get_commit_history(repo_path):
 	shell(['git', 'checkout', 'master'], cwd=repo_path)
 
 	return shell(['git', 'rev-list', '--first-parent', 'HEAD', '--reverse'], cwd=repo_path).split()
+
+def get_git_hash(repo_path):
+	shell(['git', 'checkout', 'master'], cwd=repo_path)
+	return shell(['git', 'rev-parse', 'HEAD'], cwd=repo_path)
 
 def checkout(repo_path, commit_sha):
 	shell(['git', 'checkout', '-f', commit_sha], cwd=repo_path)
