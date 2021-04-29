@@ -2,24 +2,13 @@ import os
 import sys
 from pathlib import Path
 
-import boto3
-
 from helpers import replace_with_empty
 from config import *
+from s3_common import make_client
 
 def upload_dir(dir):
 	client = make_client()
 	sync_dir(client, dir)
-
-def make_client():
-	session = boto3.session.Session()
-	client = session.client('s3',
-							region_name=SPACES_REGION_NAME,
-							endpoint_url=SPACES_ENDPOINT_URL,
-							aws_access_key_id=SPACES_KEY,
-							aws_secret_access_key=SPACES_SECRET)
-
-	return client
 
 def get_upload_list(name, existing_objects):
 	pkg_folder = f'pkg/{name}'
