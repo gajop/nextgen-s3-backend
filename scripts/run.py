@@ -5,7 +5,7 @@ import traceback
 from update_repos import run_clone
 from repos import repos
 from s3_upload import run_upload
-from s3_remove import run_remove
+from s3_remove import run_remove_repo
 from config import *
 from helpers import replace_with_empty
 
