@@ -28,12 +28,15 @@ def shell(cmds, **kwargs):
 		print(f'Error output: {result.stderr}')
 	return result.stdout.strip()
 
-def maybe_make_archive_from_git(clone_path, dest_dir):
+def maybe_make_archive_from_git(clone_path, dest_dir, force=False):
 	version = get_spring_version(clone_path)
 	name = get_spring_name(clone_path).strip()
-	dest = f'{dest_dir}/{name} {version}.sdz'
+	dest = os.path.join(dest_dir, f'{name} {version}.sdz')
 	if os.path.exists(dest):
-		return dest, False
+		if force:
+			os.remove(dest)
+		else:
+			return dest, False
 	make_archive(clone_path, version, dest)
 	return dest, True
 
